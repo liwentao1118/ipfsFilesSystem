@@ -1,62 +1,52 @@
-import React from 'react';
-import {addFile} from '../util/ipfsUtil'
+import React, {Component} from 'react';
+import {addFile} from '../utils/ipfsUtil'
 
-class Media extends React.Component {
+class Media extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            hash: "",
-            inputHash: ""
-        }
+        this.state = ({
+            hash: '',
+            inputhash: ""
+        })
     }
 
     render() {
-        const {hash ,inputHash} = this.state;
+        const {hash, inputhash} = this.state
         return (
             <div>
-                <h2>多媒体上传&获取</h2>
                 <div>
-                    <h2>多媒体上传</h2><hr/>
+                    <h2>多媒体获取&&上传</h2>
                     <fieldset>
-                        <legend>请选择文件: </legend>
-                        <input type="file" multiple ref={input => this.fileInput = input}/>
+                        <legend>请选择文件</legend>
+                        <input type="file" multiple ref={input => this.mediainput = input}/>
                     </fieldset>
-
                     <button onClick={() => {
-                        let files = this.fileInput.files;
-                        // console.log(files);
-                        const file = files[0];
-
-                        addFile(file)
-                            .then(hash => {
-                                this.setState({hash, inputHash: hash})
-                            })
-                            .catch(e => console.error(e))
-
-
-                    }}>上传多媒体</button>
-
-                    {hash && <p>多媒体Hash: {hash}</p>}
-
+                        let file = this.mediainput.files[0]
+                        addFile(file).then(hash => {
+                            this.setState({hash, inputhash: hash})
+                        }).catch(err => console.error(err))
+                    }}>提交
+                    </button>
+                    {
+                        hash && <p>多媒体hash:{hash}</p>
+                    }
                 </div>
                 <div>
-                    <h2>多媒体播放</h2><hr/>
-                    <input type="text" placeholder='请输入媒体hash' value={inputHash}
-                           onChange={(e) => this.setState({inputHash: e.target.value})}/>
-
-                    <button onClick={() => this.setState({hash: inputHash})}>查看媒体</button>
-
-                    {
-                        hash && (
-                            <div>
-                                <video controls src={`http://127.0.0.1:8080/ipfs/${hash}`}/>
-                            </div>
-                        )
+                    <h2>多媒体播放</h2>
+                    <input type="text" placeholder='请输入多媒体的hash' value={inputhash} onChange={e => {
+                        this.setState({hash: e.target.value})
                     }
+                    }/>
+                    <button onClick={()=>{
+                        this.setState({hash:inputhash})
+                    }}>播放多媒体</button>
+                    {hash&&<video controls src={`http://localhost:8080/ipfs/${hash}`}></video>}
+
                 </div>
             </div>
         );
     }
 }
+
 
 export default Media;

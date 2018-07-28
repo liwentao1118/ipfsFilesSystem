@@ -1,93 +1,77 @@
-import React from 'react';
-import ipfsAPI from 'ipfs-api';
+import React, {Component} from 'react';
+import ipfsApi from 'ipfs-api'
+const ipfs = ipfsApi({host:'localhost',port:'5001',protocol:'http'})
 
-
-
-
-const ipfs = ipfsAPI({host: 'localhost', port: '5001', protocol: 'http'})
-
-class TextPage extends React.Component {
+class Text extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            hash: '',
-            inputHash: '',
-            peerId: ""
-        }
+        this.state=({
+            hash:'',
+            peerid:'',
+            inputhash:''
+
+        })
+
     }
 
-    // 组件已挂载
     componentDidMount() {
-        ipfs.id((err, identity) => {
-            if (err) {
+        ipfs.id((err,identify)=>{
+            if(err){
                 throw err
             }
-            console.log(identity)
-            this.setState({
-                peerId: identity.id,
-                hash: '',
-                inputHash: ''
-            })
+            console.log(identify.id)
+            this.setState({peerid:identify.id})
         })
     }
 
+
     render() {
-        const {hash, peerId, inputHash} = this.state;
+        const {hash,inputhash,peerid} = this.state
         return (
             <div>
                 <h2>文本上传及获取</h2>
-                <p>当前ipfs节点id: {peerId}</p>
-
+                <p>当前ipfs节点是{peerid}</p>
                 <div>
-                    <h3>文本上传</h3><hr/>
-                    <textarea cols="30" rows="10" ref={input=> this.inputNode = input}/><br/>
-                    <button onClick={() => {
-                        let msg = this.inputNode.value;
-                        console.log(msg);
-                        // add到ipfs网络
-                        let data = Buffer.from(msg, 'utf-8');
 
-                        ipfs.files.add(data,  (err, files) => {
-                            if(err){
-                                throw err;
+                    <h3>文本上传</h3>
+                    <textarea ref={input=>this.inputNode=input}></textarea>
+                    <button onClick={()=>{
+                        let data = Buffer.from(this.inputNode.value,'utf-8')
+                        ipfs.files.add(data,(err,files)=>{
+                            if (err){
+                                throw err
                             }
-                            console.log(files[0].hash);
-                            this.setState({
-                                hash: files[0].hash,
-                                inputHash: files[0].hash,
-                            });
-                            // 'files' will be an array of objects containing paths and the multihashes of the files added
+                            console.log(files)
+                            this.setState({hash:files[0].hash,inputhash:files[0].hash})
+
                         })
 
                     }}>添加</button>
-
-                    {/*hash有值就显示*/}
-                    {hash && <p>上传完毕, 当前Hash是{hash}</p>}
+                    <p>当前hash是{hash}</p>
                 </div>
                 <div>
-                    <h3>文本获取</h3><hr/>
-                    <textarea disabled name="" id="" cols="30" rows="10" ref="outputArea"/><br/>
-                    <input type="text" placeholder="请输入hash值" value={inputHash} onChange={(e) => {
-                        this.setState({inputHash: e.target.value})
+                    <h3>文本获取</h3>
+                    <textarea name="" disabled id="" cols="30" rows="10" ref='outputArea'/><br/>
+                    <input type="text" placeholder='请输入hash值' value={inputhash} onChange={(e)=>{
+                        this.setState({inputhash:e.target.value})
                     }}/>
-                    <button onClick={() => {
-                        const ipfsPath = inputHash;
-                        console.log('input: ' + ipfsPath);
-
-                        ipfs.files.cat(ipfsPath, (err, file) => {
+                    <button onClick={()=>{
+                        console.log(this.refs.outputArea)
+                        ipfs.files.cat(inputhash,(err,file)=>{
                             if (err) {
                                 throw err
                             }
+                            this.refs.outputArea.value=file.toString('utf-8')
+                            console.log(this.refs.outputArea.value)
 
-                            let outputString = file.toString('utf8');
-                            console.log(outputString)
-                            this.refs.outputArea.value = outputString;
                         })
+
                     }}>获取</button>
                 </div>
             </div>
-        );
+        )
     }
 }
 
-export default TextPage;
+
+export default Text;
